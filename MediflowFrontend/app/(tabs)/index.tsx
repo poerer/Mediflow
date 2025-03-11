@@ -1,20 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+
+type Term = {
+    id: number;
+    term: string;
+    definition: string;
+};
 
 const HomeScreen = () => {
-    const [terms, setTerms] = useState([]);  // State für API-Daten
+    const [terms, setTerms] = useState<Term[]>([]);
+    const navigation = useNavigation();
 
     useEffect(() => {
-        fetch('http://localhost:5001/api/terms')  // API-Call
+        fetch('http://localhost:5001/api/terms')
             .then((response) => response.json())
-            .then((data) => setTerms(data))  // Daten speichern
+            .then((data: Term[]) => setTerms(data))
             .catch((error) => console.error('Fehler beim Laden der Begriffe:', error));
     }, []);
 
     return (
         <ScrollView style={styles.container}>
-            {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.greeting}>Hallo, Jana! 👋</Text>
                 <Text style={styles.subtitle}>Was möchtest Du heute lernen?</Text>
@@ -28,7 +35,7 @@ const HomeScreen = () => {
                         <Text style={styles.startText}>START</Text>
                     </TouchableOpacity>
                 </View>
-                <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.testImage} />
+                <Image source={require('../../assets/images/StartTest_doctor.png')} style={styles.testImage}/>
             </View>
 
             {/* Kategorien */}
@@ -51,11 +58,22 @@ const HomeScreen = () => {
                     { title: 'SmallTalk', icon: 'comment-processing' },
                     { title: 'Test', icon: 'checkbox-marked-circle-outline' }
                 ].map((item, index) => (
-                    <View key={index} style={styles.categoryBox}>
-                        <MaterialCommunityIcons name={item.icon} size={22} color="#317AFF" />
-                        <Text style={styles.categoryText}>{item.title}</Text>
-                    </View>
-                ))}
+                   
+                    <TouchableOpacity 
+                    key={index} 
+                    style={styles.categoryBox} 
+                    onPress={() => navigation.navigate('Krankenhaus' as never)}
+                >
+                    <MaterialCommunityIcons 
+                        name={item.icon as keyof typeof MaterialCommunityIcons.glyphMap} 
+                        size={22} 
+                        color="#317AFF" 
+                    />
+                    <Text style={styles.categoryText}>{item.title}</Text>
+                </TouchableOpacity>
+                
+))}
+            
             </View>
 
             {/* Wichtige Lernmodule */}
@@ -99,6 +117,8 @@ const HomeScreen = () => {
         </ScrollView>
     );
 };
+
+
 
 const styles = StyleSheet.create({
     container: {
