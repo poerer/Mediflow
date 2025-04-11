@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Href, Link, RelativePathString } from "expo-router";
+import { useRouter } from "expo-router";
+
 
 
 type Term = {
@@ -85,15 +87,18 @@ const categories: Array<{ title: string, icon: string, href: Href }> = [
     icon: "comment-processing",
     href: "/smalltalk",
   },
+  /*
   {
     title: "Test",
     icon: "checkbox-marked-circle-outline",
     href: "/test",
   },
+  */
 ]
 
 const HomeScreen = () => {
   const [terms, setTerms] = useState<Term[]>([]);
+  const router = useRouter(); // 
 
   useEffect(() => {
     fetch("http://localhost:5001/api/terms")
@@ -128,9 +133,10 @@ const HomeScreen = () => {
       <View style={styles.testSection}>
         <View>
           <Text style={styles.testTitle}>TESTE DICH</Text>
-          <TouchableOpacity style={styles.startButton}>
-            <Text style={styles.startText}>START</Text>
-          </TouchableOpacity>
+          <TouchableOpacity style={styles.startButton} onPress={() => router.push("/test")}>
+  <Text style={styles.startText}>START</Text>
+</TouchableOpacity>
+
         </View>
         <Image
           source={require("../../assets/images/StartTest_doctor.png")}
