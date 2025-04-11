@@ -10,6 +10,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Href, Link, RelativePathString } from "expo-router";
 
+
 type Term = {
   id: number;
   term: string;

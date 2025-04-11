@@ -1,26 +1,42 @@
 // app/chirurgie/index.tsx
 
 import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 
 const ChirurgieScreen: React.FC = () => {
+  const data = [
+    { title: "Frage 1", description: "eine Beschreibung", time: "11:20" },
+    { title: "Frage 2", description: "eine Beschreibung", time: "11:20" },
+    { title: "Frage 3", description: "eine Beschreibung", time: "11:20" },
+    { title: "Frage 4", description: "eine Beschreibung", time: "11:20" },
+  ];
+
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={require("../../assets/images/mountain.jpg")} // Platzhalterbild
-          style={styles.image}
-          contentFit="cover"
-        />
+      {/* Header */}
+      <View style={styles.searchRow}>
+        <TextInput style={styles.searchInput} placeholder="Suche..." />
+        <TouchableOpacity style={styles.filterButton}>
+          <Text style={styles.filterText}>Filter</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.title}>Chirurgie</Text>
+      <Text style={styles.subtitle}>4 Ergebnisse</Text>
 
-      {["Frage 1", "Frage 2", "Frage 3", "Frage 4"].map((question, index) => (
+      {/* Ergebnis-Karten */}
+      {data.map((item, index) => (
         <View key={index} style={styles.card}>
-          <Text style={styles.cardTitle}>{question}</Text>
-          <Text style={styles.cardDescription}>eine Beschreibung</Text>
+          <View style={styles.cardLeft}>
+            <Text style={styles.cardTitle}>{item.title}</Text>
+            <Text style={styles.cardDescription}>{item.description}</Text>
+          </View>
+          <View style={styles.cardRight}>
+            <Text style={styles.time}>{item.time}</Text>
+            <MaterialCommunityIcons name="bookmark-outline" size={24} color="#317AFF" />
+          </View>
         </View>
       ))}
     </ScrollView>
@@ -28,34 +44,78 @@ const ChirurgieScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#fff",
+  container: { flex: 1, padding: 20, backgroundColor: "#F9F9FC" },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
-  imageContainer: {
-    height: 250,
-  },
-  image: {
+  searchInput: {
     flex: 1,
-    height: "100%",
+    backgroundColor: "#f2f2f2",
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+  },
+  filterButton: {
+    backgroundColor: "#317AFF",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginLeft: 10,
+    borderRadius: 10,
+  },
+  filterText: {
+    color: "white",
+    fontWeight: "bold",
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    padding: 20,
+    color: "#1c1c7c",
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: "#444",
+    fontWeight: "600",
+    marginBottom: 20,
   },
   card: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomColor: "#eee",
-    borderBottomWidth: 1,
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#eee",
+  },
+  cardLeft: {
+    flex: 1,
   },
   cardTitle: {
     fontWeight: "bold",
     fontSize: 16,
+    marginBottom: 4,
   },
   cardDescription: {
+    color: "#555",
     fontSize: 14,
-    color: "#666",
+  },
+  cardRight: {
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    height: 45,
+  },
+  time: {
+    backgroundColor: "#E4EEFF",
+    color: "#317AFF",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    fontSize: 12,
+    fontWeight: "bold",
+    marginBottom: 4,
   },
 });
 
