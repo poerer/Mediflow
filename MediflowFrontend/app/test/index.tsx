@@ -1,6 +1,6 @@
 // app/test/index.tsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -54,12 +54,27 @@ const TestScreen: React.FC = () => {
   >([]);
   const [showResult, setShowResult] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
+  const [timeLeft, setTimeLeft] = useState(20);
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleAnswer = (option: string) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+
     setSelectedOption(option);
     const isCorrect = option === questions[currentQuestion].answer;
 
-    if (isCorrect) {
+    if (option === "") {
+      setIncorrectAnswers((prev) => [
+        ...prev,
+        {
+          question: questions[currentQuestion].question,
+          correct: questions[currentQuestion].answer,
+        },
+      ]);
+    } else if (isCorrect) {
       setCorrectAnswers(correctAnswers + 1);
     } else {
       setIncorrectAnswers((prev) => [
@@ -75,11 +90,32 @@ const TestScreen: React.FC = () => {
       if (currentQuestion + 1 < questions.length) {
         setCurrentQuestion(currentQuestion + 1);
         setSelectedOption("");
+        setTimeLeft(20);
       } else {
         setShowResult(true);
       }
     }, 1000);
   };
+
+  useEffect(() => {
+    setSelectedOption("");
+    setTimeLeft(20);
+
+    // 1. Haupttimer für automatische Antwort
+    timerRef.current = setTimeout(() => {
+      handleAnswer("");
+    }, 20000);
+
+    // 2. Countdown anzeigen
+    countdownRef.current = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [currentQuestion]);
 
   const getLanguageLevel = () => {
     const percentage = (correctAnswers / questions.length) * 100;
@@ -102,6 +138,9 @@ const TestScreen: React.FC = () => {
           <Text style={styles.question}>
             {questions[currentQuestion].question}
           </Text>
+
+          <Text style={styles.timer}>⏱ {timeLeft} Sekunden</Text>
+
           {questions[currentQuestion].options.map((option, index) => (
             <TouchableOpacity
               key={index}
@@ -170,7 +209,13 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 18,
+    marginBottom: 10,
+  },
+  timer: {
+    fontSize: 16,
+    fontWeight: "bold",
     marginBottom: 20,
+    color: "#ff3d00",
   },
   optionButton: {
     backgroundColor: "#e0e0e0",
