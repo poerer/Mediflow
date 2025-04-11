@@ -1,66 +1,189 @@
-// app/smalltalk/index.tsx
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
-import { Image } from "expo-image";
+const topics = [
+  {
+    title: "Wetter",
+    dialogue: {
+      question: "Wie ist das Wetter heute?",
+      answer: "Es ist sonnig und warm – perfektes Frühlingswetter.",
+    },
+  },
+  {
+    title: "Feiertage",
+    dialogue: {
+      question: "Gibt es bald einen Feiertag?",
+      answer: "Ja, nächste Woche ist Christi Himmelfahrt.",
+    },
+  },
+  {
+    title: "Anfahrt",
+    dialogue: {
+      question: "War die Anfahrt in Ordnung?",
+      answer: "Ja, es gab kaum Verkehr heute Morgen.",
+    },
+  },
+  {
+    title: "Freizeit",
+    dialogue: {
+      question: "Was machen Sie gerne in Ihrer Freizeit?",
+      answer: "Ich lese gerne Krimis und gehe spazieren.",
+    },
+  },
+  {
+    title: "Sport",
+    dialogue: {
+      question: "Treiben Sie Sport?",
+      answer: "Ja, ich spiele Tennis und gehe regelmäßig schwimmen.",
+    },
+  },
+];
 
 const SmallTalkScreen: React.FC = () => {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [completed, setCompleted] = useState<number[]>([]);
+
+  const handleExpand = (index: number) => {
+    setExpandedIndex(index === expandedIndex ? null : index);
+  };
+
+  const markUnderstood = (index: number) => {
+    setCompleted((prev) => [...prev, index]);
+    setExpandedIndex(null);
+  };
+
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={require("../../assets/images/mountain.jpg")}
-          style={styles.image}
-          contentFit="cover"
-        />
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Small Talk</Text>
       </View>
 
-      <Text style={styles.title}>SmallTalk</Text>
+      {topics.map((topic, index) => {
+        const isExpanded = expandedIndex === index;
+        const isDone = completed.includes(index);
 
-      {[
-        { question: "Wie war dein Wochenende?", answer: "Ganz entspannt!" },
-        { question: "Schöner Tag heute, oder?", answer: "Ja, endlich Sonne!" },
-        { question: "Wie läuft die Arbeit?", answer: "Alles im grünen Bereich." },
-        { question: "Gehst du heute noch raus?", answer: "Vielleicht, wenn es trocken bleibt." },
-      ].map((dialogue, index) => (
-        <View key={index} style={styles.card}>
-          <Text style={styles.cardTitle}>{dialogue.question}</Text>
-          <Text style={styles.cardDescription}>{dialogue.answer}</Text>
-        </View>
-      ))}
+        return (
+          <TouchableOpacity key={index} onPress={() => handleExpand(index)}>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <MaterialCommunityIcons
+                  name={
+                    isDone
+                      ? "checkbox-marked-outline"
+                      : "checkbox-blank-outline"
+                  }
+                  size={28}
+                  color={isDone ? "#317AFF" : "#ccc"}
+                />
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    isDone && {
+                      textDecorationLine: "line-through",
+                      color: "#999",
+                    },
+                  ]}
+                >
+                  {topic.title}
+                </Text>
+              </View>
+
+              {isExpanded && !isDone && (
+                <View style={styles.dialogueBox}>
+                  <Text style={styles.q}>🗣️ {topic.dialogue.question}</Text>
+                  <Text style={styles.a}>💬 {topic.dialogue.answer}</Text>
+                  <View style={styles.buttonRow}>
+                    <TouchableOpacity
+                      style={styles.buttonYes}
+                      onPress={() => markUnderstood(index)}
+                    >
+                      <Text style={styles.buttonText}>Verstanden</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.buttonNo}
+                      onPress={() => setExpandedIndex(null)}
+                    >
+                      <Text style={styles.buttonText}>Noch üben</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        );
+      })}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#fff",
+  container: { flex: 1, backgroundColor: "#fff" },
+  header: {
+    backgroundColor: "#317AFF",
+    padding: 16,
   },
-  imageContainer: {
-    height: 250,
-  },
-  image: {
-    flex: 1,
-    height: "100%",
-  },
-  title: {
-    fontSize: 20,
+  headerText: {
+    color: "#fff",
     fontWeight: "bold",
-    padding: 20,
+    fontSize: 18,
+    textAlign: "center",
   },
   card: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    padding: 16,
     borderBottomColor: "#eee",
     borderBottomWidth: 1,
   },
-  cardTitle: {
-    fontWeight: "bold",
-    fontSize: 16,
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  cardDescription: {
-    fontSize: 14,
-    color: "#666",
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginLeft: 12,
+  },
+  dialogueBox: {
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: "#F0F4FF",
+    borderRadius: 10,
+  },
+  q: {
+    fontWeight: "bold",
+    marginBottom: 6,
+  },
+  a: {
+    marginBottom: 12,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  buttonYes: {
+    backgroundColor: "#4CAF50",
+    padding: 8,
+    borderRadius: 8,
+    flex: 1,
+    alignItems: "center",
+  },
+  buttonNo: {
+    backgroundColor: "#f44336",
+    padding: 8,
+    borderRadius: 8,
+    flex: 1,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 
