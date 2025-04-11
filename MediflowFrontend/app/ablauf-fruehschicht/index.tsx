@@ -11,42 +11,92 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-const items = [
-  {
-    title: "Dokumentation",
-    time: "11:22",
-    image: require("../../assets/images/avatar1.png"),
-    description: "Vorbereitung und Sichtung der Patientendaten",
+const translations = {
+  de: {
+    heading: "Ablauf Frühschicht",
+    results: "Ergebnisse",
+    close: "Schließen",
+    switchTo: "EN",
+    items: [
+      {
+        title: "Dokumentation",
+        time: "11:22",
+        image: require("../../assets/images/avatar1.png"),
+        description: "Vorbereitung und Sichtung der Patientendaten",
+      },
+      {
+        title: "Vor Arbeitsbeginn",
+        time: "11:20",
+        image: require("../../assets/images/avatar2.png"),
+        description: "Start der Frühschicht mit Übersicht zum Tagesablauf",
+      },
+      {
+        title: "Übergabe",
+        time: "11:20",
+        image: require("../../assets/images/avatar2.png"),
+        description: "Besprechung mit dem Nachtdienst über besondere Vorkommnisse",
+      },
+      {
+        title: "Visite",
+        time: "11:20",
+        image: require("../../assets/images/avatar3.png"),
+        description: "Ärztliche Visite mit Fallbesprechung und Planung",
+      },
+    ],
   },
-  {
-    title: "Vor Arbeitsbeginn",
-    time: "11:20",
-    image: require("../../assets/images/avatar2.png"),
-    description: "Start der Frühschicht mit Übersicht zum Tagesablauf",
+  en: {
+    heading: "Morning Shift Routine",
+    results: "Results",
+    close: "Close",
+    switchTo: "DE",
+    items: [
+      {
+        title: "Documentation",
+        time: "11:22",
+        image: require("../../assets/images/avatar1.png"),
+        description: "Preparation and review of patient data",
+      },
+      {
+        title: "Before Work",
+        time: "11:20",
+        image: require("../../assets/images/avatar2.png"),
+        description: "Start of the morning shift with daily overview",
+      },
+      {
+        title: "Handover",
+        time: "11:20",
+        image: require("../../assets/images/avatar2.png"),
+        description: "Discussion with night shift about incidents",
+      },
+      {
+        title: "Ward Round",
+        time: "11:20",
+        image: require("../../assets/images/avatar3.png"),
+        description: "Doctor’s round with case review and planning",
+      },
+    ],
   },
-  {
-    title: "Übergabe",
-    time: "11:20",
-    image: require("../../assets/images/avatar2.png"),
-    description: "Besprechung mit dem Nachtdienst über besondere Vorkommnisse",
-  },
-  {
-    title: "Visite",
-    time: "11:20",
-    image: require("../../assets/images/avatar3.png"),
-    description: "Ärztliche Visite mit Fallbesprechung und Planung",
-  },
-];
+};
 
 const AblaufFruehschichtScreen: React.FC = () => {
-  const [selectedItem, setSelectedItem] = useState<null | typeof items[0]>(null);
+  const [language, setLanguage] = useState<"de" | "en">("de");
+  const [selectedItem, setSelectedItem] = useState<null | typeof translations["de"]["items"][0]>(null);
+
+  const content = translations[language];
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Ablauf Frühschicht</Text>
-      <Text style={styles.subTitle}>{items.length} Ergebnisse</Text>
+      {/* Sprachumschalt-Button */}
+      <View style={styles.langButtonContainer}>
+        <TouchableOpacity onPress={() => setLanguage(language === "de" ? "en" : "de")} style={styles.langButton}>
+          <Text style={styles.langButtonText}>{content.switchTo}</Text>
+        </TouchableOpacity>
+      </View>
 
-      {items.map((item, index) => (
+      <Text style={styles.title}>{content.heading}</Text>
+      <Text style={styles.subTitle}>{content.items.length} {content.results}</Text>
+
+      {content.items.map((item, index) => (
         <TouchableOpacity key={index} onPress={() => setSelectedItem(item)}>
           <View style={styles.card}>
             <Image source={item.image} style={styles.avatar} />
@@ -65,7 +115,7 @@ const AblaufFruehschichtScreen: React.FC = () => {
             <Text style={styles.modalTitle}>{selectedItem?.title}</Text>
             <Text style={styles.modalText}>{selectedItem?.description}</Text>
             <Pressable style={styles.closeButton} onPress={() => setSelectedItem(null)}>
-              <Text style={styles.closeText}>Schließen</Text>
+              <Text style={styles.closeText}>{content.close}</Text>
             </Pressable>
           </View>
         </View>
@@ -75,10 +125,7 @@ const AblaufFruehschichtScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: "#fff",
-  },
+  container: { padding: 16, backgroundColor: "#fff" },
   title: {
     fontSize: 16,
     fontWeight: "bold",
@@ -154,6 +201,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   closeText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  langButtonContainer: {
+    alignItems: "flex-end",
+    marginBottom: 10,
+  },
+  langButton: {
+    backgroundColor: "#317AFF",
+    padding: 6,
+    borderRadius: 20,
+    width: 45,
+    alignItems: "center",
+  },
+  langButtonText: {
     color: "#fff",
     fontWeight: "bold",
   },
