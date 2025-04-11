@@ -69,25 +69,25 @@ const categories: Array<{ title: string, icon: string, href: Href }> = [
     icon: "hospital-building",
     href: "/krankenhaus",
   },
-  { title: "Arztbrief", icon: "palette", href: "/krankenhaus" },
-  { title: "Ablauf", icon: "timeline-clock", href: "/krankenhaus" },
-  { title: "Chirurgie", icon: "needle", href: "/krankenhaus" },
+  { title: "Arztbrief", icon: "palette", href: "/arztbrief" },
+  { title: "Ablauf", icon: "timeline-clock", href: "/ablauf-fruehschicht" },
+  { title: "Chirurgie", icon: "needle", href: "/chirurgie" },
   {
     title: "Innere Medizin",
     icon: "heart-pulse",
-    href: "/krankenhaus",
+    href: "/innere-medizin",
   },
-  { title: "Orthopädie", icon: "bone", href: "/krankenhaus" },
-  { title: "WeChat", icon: "message", href: "/krankenhaus" },
+  { title: "Orthopädie", icon: "bone", href: "/orthopaedie" },
+  { title: "WeChat", icon: "message", href: "/wechat" },
   {
     title: "SmallTalk",
     icon: "comment-processing",
-    href: "/krankenhaus",
+    href: "/smalltalk",
   },
   {
     title: "Test",
     icon: "checkbox-marked-circle-outline",
-    href: "/krankenhaus",
+    href: "/test",
   },
 ]
 
