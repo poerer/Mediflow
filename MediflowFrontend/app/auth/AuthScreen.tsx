@@ -1,79 +1,129 @@
-// app/auth/AuthScreen.tsx
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, Alert } from 'react-native';
-import { auth } from '../../utils/firebaseConfig';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
+import { auth } from "../../utils/firebaseConfig";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithCredential,
+  GoogleAuthProvider,
+} from "firebase/auth";
+
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+
+// 👇 Wichtig für Google Login
+WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const router = useRouter();
-  const [isRegister, setIsRegister] = useState(false); // Umschalten zw. Login & Registrierung
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleAuth = async () => {
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: "179511557979-fhvrooaatqoet5ncb2jee2lj63md8u7t.apps.googleusercontent.com", 
+  });
+
+  const handleLogin = async () => {
     try {
-      if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password);
-        Alert.alert('✅ Registrierung erfolgreich');
-        setIsRegister(false); // Zurück zu Login
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-        Alert.alert('✅ Login erfolgreich');
-        router.replace('/'); // Optional: zurück zur Startseite
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      Alert.alert("Erfolgreich eingeloggt");
     } catch (error: any) {
-      Alert.alert('Fehler', error.message);
+      Alert.alert("Fehler", error.message);
     }
   };
 
+  const handleRegister = async () => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      Alert.alert("Registrierung erfolgreich");
+    } catch (error: any) {
+      Alert.alert("Registrierung fehlgeschlagen", error.message);
+    }
+  };
+
+  // ✅ Effekt für Google Login
+  useEffect(() => {
+    if (response?.type === "success" && response.authentication?.idToken) {
+      const idToken = response.authentication.idToken;
+      const credential = GoogleAuthProvider.credential(idToken);
+
+      signInWithCredential(auth, credential)
+        .then(() => Alert.alert("Erfolgreich mit Google eingeloggt"))
+        .catch((err) => Alert.alert("Google Login Fehler", err.message));
+    }
+  }, [response]);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{isRegister ? 'Registrieren' : 'Login'}</Text>
+      <Text style={styles.title}>Login</Text>
 
       <TextInput
         style={styles.input}
         placeholder="E-Mail"
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
         autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
         placeholder="Passwort"
-        secureTextEntry
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
       />
 
-      <Button title={isRegister ? 'Registrieren' : 'Login'} onPress={handleAuth} />
+      <Button title="LOGIN" onPress={handleLogin} />
 
-      <Text style={styles.switch} onPress={() => setIsRegister(!isRegister)}>
-        {isRegister
-          ? '🔒 Bereits registriert? Jetzt einloggen'
-          : '📩 Noch keinen Account? Jetzt registrieren'}
-      </Text>
+      <TouchableOpacity onPress={handleRegister}>
+        <Text style={styles.link}>
+          📩 Noch keinen Account? Jetzt registrieren
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => promptAsync()}
+        disabled={!request}
+        style={[styles.googleButton, { marginTop: 16 }]}
+      >
+        <Text style={styles.googleButtonText}>Mit Google einloggen</Text>
+      </TouchableOpacity>
     </View>
+    
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, justifyContent: 'center', backgroundColor: '#f4f6f8' },
-  title: { fontSize: 24, marginBottom: 24, textAlign: 'center', fontWeight: 'bold' },
+  container: { flex: 1, padding: 16, justifyContent: "center" },
+  title: { fontSize: 24, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 14,
-    marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 12,
   },
-  switch: {
-    marginTop: 14,
-    color: '#317AFF',
-    textAlign: 'center',
-    textDecorationLine: 'underline',
+  link: {
+    marginTop: 12,
+    color: "#317AFF",
+    textAlign: "center",
+  },
+  googleButton: {
+    backgroundColor: "#EA4335",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  googleButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
+
