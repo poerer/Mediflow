@@ -1,37 +1,166 @@
-import React from "react";
-import { View, Text, StyleSheet, Image, Button, Alert } from "react-native";
-import { useAuth } from "../app/contexts/AuthContext"; // ✅ Richtiger Pfad zum Kontext
+// app/profile.tsx
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Button,
+  Alert,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { auth } from "../utils/firebaseConfig";
+import { useAuth } from "./contexts/AuthContext";
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
+  const [activeTab, setActiveTab] = useState<"profile" | "access" | "settings" | "account">(
+    "profile"
+  );
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [country, setCountry] = useState("");
+
   const handleLogout = async () => {
     try {
-      await signOut(auth);      // Firebase ausloggen
-      logout();                 // Kontext-User leeren
-      router.replace("/auth/AuthScreen"); // Weiterleitung zum Login-Screen
+      await signOut(auth);
+      logout();
+      router.replace("/auth/AuthScreen");
     } catch (error: any) {
       Alert.alert("Fehler beim Logout", error.message);
     }
   };
 
+  const saveProfile = () => {
+    Alert.alert("Profil gespeichert", "Deine Änderungen wurden übernommen.");
+  };
+
   return (
-    <View style={styles.container}>
-      {user?.photoURL && (
-        <Image source={{ uri: user.photoURL }} style={styles.avatar} />
-      )}
-      <Text style={styles.email}>{user?.email}</Text>
-      <Button title="Logout" color="#e53935" onPress={handleLogout} />
-    </View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.pageTitle}>Profil und Einstellungen</Text>
+      <View style={styles.row}>
+        <View style={styles.sidebar}>
+          <TouchableOpacity onPress={() => setActiveTab("profile")}>
+            <Text style={[styles.menuItem, activeTab === "profile" && styles.active]}>
+              Profil
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTab("access")}>
+            <Text style={[styles.menuItem, activeTab === "access" && styles.active]}>
+              Zugang verwalten
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTab("settings")}>
+            <Text style={[styles.menuItem, activeTab === "settings" && styles.active]}>
+              Einstellungen
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTab("account")}>
+            <Text style={[styles.menuItem, activeTab === "account" && styles.active]}>
+              Kontoinformationen
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* === FORMULARRECHTS === */}
+        <View style={styles.form}>
+          {activeTab === "profile" && (
+            <>
+              <Text style={styles.heading}>Mein Profil</Text>
+              <Text style={styles.label}>Anzeigename</Text>
+              <TextInput style={styles.input} value={displayName} onChangeText={setDisplayName} />
+              <Text style={styles.hint}>
+                Dein Name auf dieser Plattform und im Online-Unterricht.
+              </Text>
+
+              <Text style={styles.label}>Vorname</Text>
+              <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} />
+              <Text style={styles.hint}>Muss mindestens 2 Zeichen lang sein</Text>
+
+              <Text style={styles.label}>Nachname</Text>
+              <TextInput style={styles.input} value={lastName} onChangeText={setLastName} />
+              <Text style={styles.hint}>Du kannst dieses Feld leer lassen, wenn du möchtest</Text>
+
+              <Text style={styles.label}>Land</Text>
+              <TextInput style={styles.input} value={country} onChangeText={setCountry} />
+
+              <View style={styles.saveBtn}>
+                <Button title="Profil speichern" onPress={saveProfile} />
+              </View>
+            </>
+          )}
+
+          {activeTab === "access" && (
+            <>
+              <Text style={styles.heading}>Zugang verwalten</Text>
+              <Text style={styles.label}>Deine E-Mail</Text>
+              <TextInput
+                style={[styles.input, styles.readonlyInput]}
+                value={user?.email ?? ""}
+                editable={false}
+              />
+              <TouchableOpacity style={styles.actionBtn}>
+                <Text style={styles.actionText}>✏️ E-Mail-Adresse ändern</Text>
+              </TouchableOpacity>
+
+              <Text style={[styles.label, { marginTop: 20 }]}>Ihr Passwort</Text>
+              <TextInput style={[styles.input, styles.readonlyInput]} value="" editable={false} secureTextEntry />
+              <TouchableOpacity style={styles.actionBtn}>
+                <Text style={styles.actionText}>✏️ Passwort ändern</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {activeTab === "settings" && (
+            <Text style={styles.heading}>Einstellungen – kommt noch 😉</Text>
+          )}
+          {activeTab === "account" && (
+            <Text style={styles.heading}>Kontoinformationen – folgt bald!</Text>
+          )}
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  avatar: { width: 100, height: 100, borderRadius: 50, marginBottom: 20 },
-  email: { fontSize: 16, fontWeight: "bold", marginBottom: 40 },
+  container: { flex: 1, backgroundColor: "#fff", paddingTop: 50 },
+  pageTitle: { fontSize: 24, fontWeight: "bold", marginBottom: 16, paddingHorizontal: 20 },
+  row: { flexDirection: "row", paddingHorizontal: 20 },
+  sidebar: { width: 180, paddingRight: 10 },
+  menuItem: { paddingVertical: 10, fontSize: 16, color: "#333" },
+  active: { color: "orange", fontWeight: "bold" },
+  form: { flex: 1 },
+  heading: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
+  label: { fontWeight: "bold", marginTop: 12 },
+  input: {
+    backgroundColor: "#F3F2EE",
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 6,
+  },
+  hint: { fontSize: 12, color: "#666", marginBottom: 10 },
+  readonlyInput: {
+    color: "#888",
+  },
+  actionBtn: {
+    marginTop: 10,
+    backgroundColor: "black",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 25,
+    alignSelf: "flex-start",
+  },
+  actionText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  saveBtn: { marginTop: 20 },
 });
