@@ -2,15 +2,16 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   Image,
+  TouchableOpacity,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Href, Link, useRouter } from "expo-router";
 import { auth } from "../../utils/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
+import { ProfileDropdown } from "../../components/ProfileDropdown"; // 👈 hier importiert
 
 type Term = {
   id: number;
@@ -52,36 +53,12 @@ const HomeScreen = () => {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#F6F7FB" }}>
-      {/* 🔝 Top Bar */}
+      {/* 🔝 Top Bar mit Avatar + Dropdown Menü */}
       <View style={styles.topBar}>
         <Text style={styles.topTitle}>
           {user ? `Hallo, ${user.email?.split("@")[0]}! 👋` : "Hallo! 👋"}
         </Text>
-        <TouchableOpacity
-          onPress={() => router.push("/profile")}
-          style={styles.avatarButton}
-        >
-          {user ? (
-            user.photoURL ? (
-              <Image
-                source={{ uri: user.photoURL }}
-                style={styles.avatarImage}
-              />
-            ) : (
-              <View style={styles.avatarInitial}>
-                <Text style={styles.avatarText}>
-                  {user.email?.charAt(0).toUpperCase() || "U"}
-                </Text>
-              </View>
-            )
-          ) : (
-            <MaterialCommunityIcons
-              name="account-circle"
-              size={40}
-              color="#fff"
-            />
-          )}
-        </TouchableOpacity>
+        <ProfileDropdown user={user} /> {/* 👈 Avatar & Dropdown-Menü */}
       </View>
 
       {/* Teste Dich */}
@@ -149,31 +126,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    position: "relative", // wichtig für zIndex-Kindkomponenten
+    zIndex: 1,
   },
+  avatarButton: {
+    position: "relative",
+    zIndex: 10, // Avatar ganz nach vorne holen
+  },
+  
   topTitle: {
     fontSize: 18,
     color: "#fff",
-    fontWeight: "bold",
-  },
-  avatarButton: {
-    borderRadius: 20,
-    backgroundColor: "#317AFF",
-  },
-  avatarImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  avatarInitial: {
-    backgroundColor: "#fff",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    color: "#317AFF",
     fontWeight: "bold",
   },
   testSection: {
