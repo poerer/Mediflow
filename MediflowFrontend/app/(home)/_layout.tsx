@@ -1,4 +1,3 @@
-// app/(home)/index.tsx
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -10,7 +9,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Href, Link, useRouter } from "expo-router";
-import { auth } from "../../utils/firebaseConfig"; // 🔐 Firebase Auth
+import { auth } from "../../utils/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 
 type Term = {
@@ -44,7 +43,6 @@ const HomeScreen = () => {
       );
   }, []);
 
-  // 🔐 Auth state beobachten
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -56,9 +54,11 @@ const HomeScreen = () => {
     <ScrollView style={{ flex: 1, backgroundColor: "#F6F7FB" }}>
       {/* 🔝 Top Bar */}
       <View style={styles.topBar}>
-        <Text style={styles.topTitle}>Hallo, Jana! 👋</Text>
+        <Text style={styles.topTitle}>
+          {user ? `Hallo, ${user.email?.split("@")[0]}! 👋` : "Hallo! 👋"}
+        </Text>
         <TouchableOpacity
-          onPress={() => router.push("/auth/AuthScreen")}
+          onPress={() => router.push("/profile")}
           style={styles.avatarButton}
         >
           {user ? (
@@ -124,7 +124,7 @@ const HomeScreen = () => {
         ))}
       </View>
 
-      {/* API-Daten */}
+      {/* Begriffe */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Medizinische Begriffe</Text>
       </View>
