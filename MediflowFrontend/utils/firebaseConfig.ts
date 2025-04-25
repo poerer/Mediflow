@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDSjecSciLApkOmasxuVkRoDJ4rPMYVchI",
@@ -16,6 +17,8 @@ const app = initializeApp(firebaseConfig);
 
 // 👉 Export Auth (nur das brauchst du für Login/Register)
 export const auth = getAuth(app);
+export const db = getFirestore(app);
+
 
 // ❌ Entferne oder sichere Analytics (optional, falls du es brauchst)
 // import { getAnalytics } from "firebase/analytics";

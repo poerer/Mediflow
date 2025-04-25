@@ -1,5 +1,5 @@
 // app/profile.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,24 +9,60 @@ import {
   Alert,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
-import { auth } from "../utils/firebaseConfig";
+import { auth, db } from "../utils/firebaseConfig";
 import { useAuth } from "./contexts/AuthContext";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<"profile" | "access" | "settings" | "account">(
-    "profile"
-  );
+  const [activeTab, setActiveTab] = useState<"profile" | "access" | "settings" | "account">("profile");
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [country, setCountry] = useState("");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setDisplayName(data.displayName || "");
+        setFirstName(data.firstName || "");
+        setLastName(data.lastName || "");
+        setCountry(data.country || "");
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  const saveProfile = async () => {
+    if (!user) return;
+
+    try {
+      await setDoc(doc(db, "users", user.uid), {
+        displayName,
+        firstName,
+        lastName,
+        country,
+        email: user.email,
+      });
+
+      Alert.alert("Profil gespeichert", "Deine Änderungen wurden übernommen.");
+    } catch (error: any) {
+      Alert.alert("Fehler beim Speichern", error.message);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -38,19 +74,14 @@ export default function ProfileScreen() {
     }
   };
 
-  const saveProfile = () => {
-    Alert.alert("Profil gespeichert", "Deine Änderungen wurden übernommen.");
-  };
-
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.pageTitle}>Profil und Einstellungen</Text>
       <View style={styles.row}>
+        {/* 🧭 Sidebar Navigation */}
         <View style={styles.sidebar}>
           <TouchableOpacity onPress={() => setActiveTab("profile")}>
-            <Text style={[styles.menuItem, activeTab === "profile" && styles.active]}>
-              Profil
-            </Text>
+            <Text style={[styles.menuItem, activeTab === "profile" && styles.active]}>Profil</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setActiveTab("access")}>
             <Text style={[styles.menuItem, activeTab === "access" && styles.active]}>
@@ -67,10 +98,20 @@ export default function ProfileScreen() {
               Kontoinformationen
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout}>
+            <Text style={[styles.menuItem, { color: "red" }]}>Ausloggen</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* === FORMULARRECHTS === */}
+        {/* 📝 Form Content */}
         <View style={styles.form}>
+          {user?.photoURL && (
+            <Image
+              source={{ uri: user.photoURL }}
+              style={{ width: 60, height: 60, borderRadius: 30, alignSelf: "flex-end", marginBottom: 10 }}
+            />
+          )}
+
           {activeTab === "profile" && (
             <>
               <Text style={styles.heading}>Mein Profil</Text>
@@ -111,7 +152,12 @@ export default function ProfileScreen() {
               </TouchableOpacity>
 
               <Text style={[styles.label, { marginTop: 20 }]}>Ihr Passwort</Text>
-              <TextInput style={[styles.input, styles.readonlyInput]} value="" editable={false} secureTextEntry />
+              <TextInput
+                style={[styles.input, styles.readonlyInput]}
+                value="●●●●●●●"
+                editable={false}
+                secureTextEntry
+              />
               <TouchableOpacity style={styles.actionBtn}>
                 <Text style={styles.actionText}>✏️ Passwort ändern</Text>
               </TouchableOpacity>
