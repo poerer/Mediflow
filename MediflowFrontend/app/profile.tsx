@@ -16,6 +16,7 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../utils/firebaseConfig";
 import { useAuth } from "./contexts/AuthContext";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import axios from "axios"; // NEU: Axios für PostgreSQL Request
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
@@ -47,8 +48,13 @@ export default function ProfileScreen() {
   }, [user]);
 
   const saveProfile = async () => {
-    if (!user) return;
-
+    console.log('🛠️ saveProfile wurde gestartet'); 
+  
+    if (!user) {
+      console.log('❌ Kein User gefunden');
+      return;
+    }
+  
     try {
       await setDoc(doc(db, "users", user.uid), {
         displayName,
@@ -57,12 +63,27 @@ export default function ProfileScreen() {
         country,
         email: user.email,
       });
-
+  
+      console.log('✅ Firestore erfolgreich gespeichert'); // <<< nach Firestore speichern
+  
+      await axios.post('http://192.168.178.50:5002/api/profiles', {
+        uid: user.uid,
+        displayName,
+        email: user.email,
+        firstName,
+        lastName,
+        country,
+      });
+      
+      console.log('✅ PostgreSQL-Request abgeschickt'); // <<< nach PostgreSQL Request
+  
       Alert.alert("Profil gespeichert", "Deine Änderungen wurden übernommen.");
     } catch (error: any) {
-      Alert.alert("Fehler beim Speichern", error.message);
+      console.error('❌ Fehler beim Speichern:', error); // <<< wenn Fehler kommt
+      Alert.alert("Fehler beim Speichern", error.message || "Unbekannter Fehler");
     }
   };
+  
 
   const handleLogout = async () => {
     try {

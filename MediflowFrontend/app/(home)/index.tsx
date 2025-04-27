@@ -10,6 +10,10 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Href, Link, RelativePathString } from "expo-router";
 import { useRouter } from "expo-router";
+import { auth } from "../../utils/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { ProfileDropdown } from "../../components/ProfileDropdown";
+
 
 
 
@@ -98,7 +102,27 @@ const categories: Array<{ title: string, icon: string, href: Href }> = [
 
 const HomeScreen = () => {
   const [terms, setTerms] = useState<Term[]>([]);
-  const router = useRouter(); // 
+  const [user, setUser] = useState<any>(null); // <-- Hier NEU
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      fetch('http://localhost:5001/api/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+        }),
+      })
+      .then(res => res.json())
+      .then(data => console.log('✅ Profil gespeichert:', data))
+      .catch(err => console.error('❌ Fehler beim Speichern des Profils:', err));
+    }
+  }, [user]);
+  
 
   useEffect(() => {
     fetch("http://localhost:5001/api/terms")
@@ -109,25 +133,22 @@ const HomeScreen = () => {
       );
   }, []);
 
+
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: "#F6F7FB",
-        paddingHorizontal: 16,
-      }}
-    >
-      <View
-        style={{
-          backgroundColor: "#317AFF",
-          padding: 20,
-          borderRadius: 10,
-          marginBottom: 20,
-        }}
-      >
-        <Text style={styles.greeting}>Hallo, Jana! 👋</Text>
-        <Text style={styles.subtitle}>Was möchtest Du heute lernen?</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: "#F6F7FB" }}>
+      
+      {/* 👤 Profilbereich oben */}
+      <View style={styles.topBar}>
+        <Text style={styles.topTitle}>
+          {user ? `Hallo, ${user.email?.split("@")[0]}! 👋` : "Hallo! 👋"}
+        </Text>
+        <ProfileDropdown user={user} />
       </View>
+  
+  
+  
+      {/* Rest von deinem Code */}
+  
 
       {/* Teste Dich Sektion */}
       <View style={styles.testSection}>
@@ -301,6 +322,22 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 10,
   },
+
+  topBar: {
+    backgroundColor: "#317AFF",
+    padding: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    position: "relative",
+    zIndex: 1,
+  },
+  topTitle: {
+    fontSize: 18,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  
 });
 
 export default HomeScreen;

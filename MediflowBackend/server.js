@@ -2,32 +2,38 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./database');
-const MedicalTerm = require('./models/MedicalTerm');  // Importiere das Model
-const medicalTermsRoutes = require('./routes/medicalTerms'); // Importiere die API-Routen
+const MedicalTerm = require('./models/MedicalTerm');  
+const medicalTermsRoutes = require('./routes/medicalTerms'); 
+const profileRoutes = require('./routes/profile'); // <-- require statt import!!
 
-const app = express();
+const app = express(); // <-- DAS muss VOR app.use() kommen!
+
 app.use(cors());
 app.use(express.json());
+
+// Routen einbinden
+app.use('/api/terms', medicalTermsRoutes);
+app.use('/api/profiles', profileRoutes); // <-- NUR EINMAL!
 
 // Test-Route
 app.get('/', (req, res) => {
     res.send('Mediflow API läuft! 🚀');
 });
 
-// API-Routen für medizinische Begriffe
-app.use('/api/terms', medicalTermsRoutes);
-
 // Datenbank synchronisieren
 sequelize.sync()
     .then(() => console.log("✅ Datenbank synchronisiert!"))
     .catch(err => console.log("❌ Fehler beim Synchronisieren:", err));
 
-    MedicalTerm.findAll().then(terms => {
+// Testweise MedicalTerms abrufen
+MedicalTerm.findAll()
+    .then(terms => {
         console.log("✅ Einträge in der Datenbank:", terms);
-    }).catch(error => {
+    })
+    .catch(error => {
         console.error("❌ Fehler beim Abrufen der Daten:", error);
     });
-    
+
 // Server starten
 const port = process.env.PORT || 5001;
 app.listen(port, () => console.log(`✅ Server läuft auf Port ${port}`));
